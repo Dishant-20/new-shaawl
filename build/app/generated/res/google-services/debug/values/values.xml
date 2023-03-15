@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">378781745237-82fcjtcvkp8thdf4ptl53qfb1d6ppcm1.apps.googleusercontent.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">378781745237</string>
+    <string name="google_api_key" translatable="false">AIzaSyAhA1-BV497FOTlxK1LaMbSj1hS0SRHZuE</string>
+    <string name="google_app_id" translatable="false">1:378781745237:android:0960eab8d3a5e51cbd14dc</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyAhA1-BV497FOTlxK1LaMbSj1hS0SRHZuE</string>
+    <string name="google_storage_bucket" translatable="false">shaawl.appspot.com</string>
+    <string name="project_id" translatable="false">shaawl</string>
+</resources>
