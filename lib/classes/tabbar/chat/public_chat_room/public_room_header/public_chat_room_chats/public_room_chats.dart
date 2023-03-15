@@ -1,11 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shaawl/classes/headers/utils/utils.dart';
-
-class ChatMessage {
-  String messageContent;
-  String messageType;
-  ChatMessage({required this.messageContent, required this.messageType});
-}
 
 class PublicChatRoomChats extends StatefulWidget {
   const PublicChatRoomChats({super.key});
@@ -18,75 +15,115 @@ class _PublicChatRoomChatsState extends State<PublicChatRoomChats> {
   //
   // ScrollController controller = ScrollController();
   //
-  List<ChatMessage> messages = [
-    ChatMessage(messageContent: "Hello, Will", messageType: "receiver"),
-    ChatMessage(
-        messageContent:
-            "How have you been? How have you been? How have you been?",
-        messageType: "receiver"),
-    ChatMessage(
-        messageContent:
-            "Hey Kriss, I am doing fine dude. wbu? Hey Kriss, I am doing fine dude. wbu? Hey Kriss, I am doing fine dude. wbu? Hey Kriss, I am doing fine dude. wbu?",
-        messageType: "sender"),
-    ChatMessage(messageContent: "ehhhh, doing OK.", messageType: "receiver"),
-    ChatMessage(
-        messageContent: "Is there any thing wrong 2?", messageType: "sender"),
-    ChatMessage(messageContent: "ehhhh, doing OK.", messageType: "receiver"),
-    ChatMessage(
-        messageContent: "Is there any thing wrong 2?", messageType: "sender"),
-    ChatMessage(messageContent: "ehhhh, doing OK.", messageType: "receiver"),
-    ChatMessage(
-        messageContent: "Is there any thing wrong 2?", messageType: "sender"),
-    ChatMessage(messageContent: "ehhhh, doing OK.", messageType: "receiver"),
-    ChatMessage(
-        messageContent: "Is there any thing wrong 2?", messageType: "sender"),
-  ];
+  bool _needsScroll = false;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  _scrollToEnd() async {
+    if (_needsScroll) {
+      _needsScroll = false;
+      _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.transparent,
-      margin: const EdgeInsets.only(top: 120, bottom: 60),
-      child: ListView.builder(
-        // controller: controller,
-        itemCount: messages.length,
-        shrinkWrap: true,
-        padding: const EdgeInsets.only(top: 10, bottom: 10),
-        physics: const BouncingScrollPhysics(),
-        itemBuilder: (context, index) {
-          return Container(
-            padding: const EdgeInsets.only(
-              left: 14,
-              right: 14,
-              //
-              top: 10,
-              bottom: 10,
-            ),
-            child: Align(
-              alignment: (messages[index].messageType == "receiver"
-                  ? Alignment.topLeft
-                  : Alignment.topRight),
-              child: (messages[index].messageType == "receiver")
-                  ? receiverUI(index)
-                  : senderUI(index),
-            ),
-          );
-        },
+    return GestureDetector(
+      onTap: () {
+        // keyboard dismiss when click outside
+        FocusScopeNode currentFocus = FocusScope.of(context);
+
+        if (!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: Container(
+        color: Colors.transparent,
+        margin: const EdgeInsets.only(top: 0, bottom: 60),
+        child: StreamBuilder(
+            stream: FirebaseFirestore.instance
+                .collection(
+                  "message/India/public_chats",
+                )
+                .orderBy('time_stamp', descending: false)
+                .limit(40)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                //
+                _needsScroll = true;
+                WidgetsBinding.instance
+                    .addPostFrameCallback((_) => _scrollToEnd());
+                //
+                var getSnapShopValue = snapshot.data!.docs.toList();
+                if (kDebugMode) {
+                  // print(getSnapShopValue);
+                }
+                return ListView.builder(
+                  // controller: controller,
+                  controller: _scrollController,
+                  itemCount: getSnapShopValue.length,
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.only(top: 10, bottom: 10),
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return Container(
+                      padding: const EdgeInsets.only(
+                        left: 14,
+                        right: 14,
+                        //
+                        top: 10,
+                        bottom: 10,
+                      ),
+                      child: Align(
+                        alignment: (getSnapShopValue[index]
+                                        ['sender_firebase_id']
+                                    .toString() ==
+                                FirebaseAuth.instance.currentUser!.uid
+                            ? Alignment.topRight
+                            : Alignment.topLeft),
+                        child: leftSideUIOnlyForPublicChat(
+                            getSnapShopValue, index),
+                        // (getSnapShopValue[index]['sender_firebase_id']
+                        //             .toString() ==
+                        //         FirebaseAuth.instance.currentUser!.uid)
+                        //     ? senderUI(getSnapShopValue, index)
+                        //     : receiverUI(index),
+                      ),
+                    );
+                  },
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text('Error: ${snapshot.error}'),
+                );
+              }
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }),
       ),
     );
   }
 
-  Column receiverUI(int index) {
+  Column leftSideUIOnlyForPublicChat(getSnapshotData, int index) {
     return Column(
       children: [
         //
         Align(
           alignment: Alignment.bottomLeft,
-          child: textWithRegularStyle(
-            'Dishant Rajput',
-            12.0,
+          child: textWithSemiBoldStyle(
+            //
+            getSnapshotData[index]['sender_name'].toString(),
+            //
+            14.0,
             Colors.black,
-            'right',
+            // 'right',
           ),
         ),
         //
@@ -111,13 +148,13 @@ class _PublicChatRoomChatsState extends State<PublicChatRoomChats> {
                   16,
                 ),
               ),
-              color: (messages[index].messageType == "receiver"
-                  ? Colors.grey.shade200
-                  : Colors.blue[200]),
+              color: Colors.grey.shade200,
             ),
             padding: const EdgeInsets.all(16),
             child: Text(
-              messages[index].messageContent,
+              //
+              getSnapshotData[index]['message'].toString(),
+              //
               style: const TextStyle(fontSize: 15),
             ),
           ),
@@ -126,7 +163,9 @@ class _PublicChatRoomChatsState extends State<PublicChatRoomChats> {
         Align(
           alignment: Alignment.bottomLeft,
           child: textWithRegularStyle(
-            '6:44 am',
+            //
+            getSnapshotData[index]['time_stamp'].toString(),
+            //
             12.0,
             Colors.black,
             'left',
@@ -137,7 +176,7 @@ class _PublicChatRoomChatsState extends State<PublicChatRoomChats> {
     );
   }
 
-  Column senderUI(int index) {
+  Column senderUI(getSnapshot, int index) {
     return Column(
       children: [
         Align(
@@ -158,16 +197,14 @@ class _PublicChatRoomChatsState extends State<PublicChatRoomChats> {
                   16,
                 ),
               ),
-              color: (messages[index].messageType == "receiver"
-                  ? Colors.grey.shade200
-                  : Colors.blue[200]),
+              color: Colors.blue[200],
             ),
             padding: const EdgeInsets.all(
               16,
             ),
-            child: Text(
-              messages[index].messageContent,
-              style: const TextStyle(
+            child: const Text(
+              'r',
+              style: TextStyle(
                 fontSize: 15,
               ),
             ),
@@ -177,7 +214,7 @@ class _PublicChatRoomChatsState extends State<PublicChatRoomChats> {
         Align(
           alignment: Alignment.bottomRight,
           child: textWithRegularStyle(
-            '6:44 am',
+            getSnapshot[index]['time_stamp'].toString(),
             12.0,
             Colors.black,
             'right',

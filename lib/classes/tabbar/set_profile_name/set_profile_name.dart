@@ -22,28 +22,29 @@ class _SetProfileNameScreenState extends State<SetProfileNameScreen> {
   final formGlobalKey = GlobalKey<FormState>();
   TextEditingController contSetName = TextEditingController();
   //
+  var strSaveChatUserId = '0';
   @override
   void initState() {
     super.initState();
     //
-
+    // func();
     //
   }
 
-  // func() async {
-  //   try {
-  //     final userCredential = await FirebaseAuth.instance.signInAnonymously();
-  //     print("Signed in with temporary account.");
-  //   } on FirebaseAuthException catch (e) {
-  //     switch (e.code) {
-  //       case "operation-not-allowed":
-  //         print("Anonymous auth hasn't been enabled for this project.");
-  //         break;
-  //       default:
-  //         print("Unknown error.");
-  //     }
-  //   }
-  // }
+  func() async {
+    try {
+      final userCredential = await FirebaseAuth.instance.signInAnonymously();
+      print("Signed in with temporary account.");
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case "operation-not-allowed":
+          print("Anonymous auth hasn't been enabled for this project.");
+          break;
+        default:
+          print("Unknown error.");
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +211,10 @@ class _SetProfileNameScreenState extends State<SetProfileNameScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const PublicChatRoomScreen(),
+                  builder: (context) => PublicChatRoomScreen(
+                    strSenderName: contSetName.text.toString(),
+                    strSenderChatId: chatUserId.toString(),
+                  ),
                 ),
               );
               //
@@ -252,7 +256,10 @@ class _SetProfileNameScreenState extends State<SetProfileNameScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const PublicChatRoomScreen(),
+            builder: (context) => PublicChatRoomScreen(
+              strSenderName: contSetName.text.toString(),
+              strSenderChatId: chatUserId.toString(),
+            ),
           ),
         );
         //
@@ -265,15 +272,6 @@ class _SetProfileNameScreenState extends State<SetProfileNameScreen> {
     );
   }
 }
-
- 
-
-
- 
-
-
-
-
 
 /*
 funcEditLoginChatUserFirebaseData(

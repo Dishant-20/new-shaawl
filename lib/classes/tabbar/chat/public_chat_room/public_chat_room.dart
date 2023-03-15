@@ -1,13 +1,20 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shaawl/classes/headers/utils/utils.dart';
+import 'package:shaawl/classes/tabbar/chat/all_chat_list/all_chats_list.dart';
 import 'package:shaawl/classes/tabbar/chat/public_chat_room/public_room_header/public_chat_room_chats/public_room_chats.dart';
 import 'package:shaawl/classes/tabbar/chat/public_chat_room/public_room_header/public_room_header.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PublicChatRoomScreen extends StatefulWidget {
-  const PublicChatRoomScreen({super.key});
+  const PublicChatRoomScreen(
+      {super.key, required this.strSenderName, required this.strSenderChatId});
+
+  final String strSenderName;
+  final String strSenderChatId;
 
   @override
   State<PublicChatRoomScreen> createState() => _PublicChatRoomScreenState();
@@ -19,53 +26,85 @@ class _PublicChatRoomScreenState extends State<PublicChatRoomScreen> {
   ScrollController controller = ScrollController();
   //
   TextEditingController contTextSendMessage = TextEditingController();
-
   //
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        body: Stack(
-      children: [
-        // ======> HEADER <======
-        // ========================
-        const PublicRoomHeader(),
-        // ========================
-        // ========================
+  void initState() {
+    super.initState();
 
-        // ======> ALL CHATS LIST <======
-        // ========================
-        const PublicChatRoomChats(),
-        // ========================
-        // ========================
-
-        // ======> SEND MESSAGE UI <======
-        // ========================
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: sendMessageUI(),
-        ),
-        // ========================
-        // ========================
-        //
-      ],
-    )
-        /*SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        controller: controller,
-        child: Form(
-          key: formGlobalKey,
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: sendMessageUI(),
-          ),
-        ),
-      ),*/
-        );
+    //
+    // controller.jumpTo(controller.position.maxScrollExtent);
+    //
   }
 
-/*
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(30.0),
+          child: AppBar(
+            // title: textWithSemiBoldStyle('Chat Room', 16.0, Colors.white),
+            automaticallyImplyLeading: false,
+            bottom: TabBar(
+              // controller: _tabController,
+              indicatorColor: Colors.lime,
+              isScrollable: false,
+              tabs: [
+                textWithSemiBoldStyle(
+                  'Public',
+                  16.0,
+                  Colors.white,
+                ),
+                textWithSemiBoldStyle(
+                  'Rooms',
+                  16.0,
+                  Colors.white,
+                ),
+              ],
+            ),
+            // actions: const [
+            //   Icon(
+            //     Icons.exit_to_app,
+            //   ),
+            // ],
+          ),
+        ),
+        body: TabBarView(
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            Stack(
+              children: [
+                // ======> ALL CHATS LIST <======
+                // ========================
+                const PublicChatRoomChats(),
+                // ========================
+                // ========================
 
-*/
+                // ======> SEND MESSAGE UI <======
+                // ========================
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: sendMessageUI(),
+                ),
+                // ========================
+                // ========================
+                //
+              ],
+            ),
+
+            // ======> SECOND TAB <======
+            // ========================
+            const AllChatsListScreen()
+            // ========================
+            // ========================
+          ],
+        ),
+      ),
+    );
+  }
+
   Container sendMessageUI() {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -100,16 +139,18 @@ class _PublicChatRoomScreenState extends State<PublicChatRoomScreen> {
                 print('send');
               }
               //
-              controller.jumpTo(controller.position.maxScrollExtent);
+
               //
-              if (formGlobalKey.currentState!.validate()) {
-                if (kDebugMode) {
-                  print('object');
-                }
-                //
-                sendMessage(contTextSendMessage.text.toString());
-                //
-              }
+              // if (formGlobalKey.currentState!.validate()) {
+              //   if (kDebugMode) {
+              //     print('object');
+              //   }
+              sendMessageViaFirebase(contTextSendMessage.text);
+              contTextSendMessage.text = '';
+              //
+              // sendMessage(contTextSendMessage.text.toString());
+              //
+              // }
             },
             icon: const Icon(
               Icons.send,
@@ -123,29 +164,34 @@ class _PublicChatRoomScreenState extends State<PublicChatRoomScreen> {
 
   //
   // send message
-  sendMessage(strGetMessage) async {
-    // str_last_message = str_get_message.toString();
+  // send message
+  sendMessageViaFirebase(strLastMessageEntered) {
     // print(cont_txt_send_message.text);
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
+
     CollectionReference users = FirebaseFirestore.instance.collection(
-      'message/shaawl/public_chats',
+      'message/India/public_chats',
     );
 
     users
         .add(
           {
-            'sender_name': 'test',
-            'users': [
-              'room_id',
-              'reverse_room_id',
-            ],
+            'sender_chat_user_id': widget.strSenderChatId.toString(),
+            'sender_name': widget.strSenderName.toString(),
+            'sender_gender': 'gender',
+            'sender_firebase_id': FirebaseAuth.instance.currentUser!.uid,
+            'message': strLastMessageEntered.toString(),
+            'time_stamp': DateTime.now().millisecondsSinceEpoch,
+            'room': 'public',
+            'type': 'text_message',
           },
         )
-        .then((value) => print(
-                "Message send successfully. Message id is =====>${value.id}")
+        .then(
+          (value) => print(
+              "Message send successfully. Message id is =====>${value.id}"),
+          // func_scroll_to_bottom(),
 
-            // func_scroll_to_bottom(),
-            )
+          // func_check_scrolling(),
+        )
         .catchError(
           (error) => print("Failed to add user: $error"),
         );

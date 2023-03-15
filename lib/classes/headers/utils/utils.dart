@@ -30,7 +30,7 @@ Text textWithSemiBoldStyle(str, textSize, textColor) {
     str.toString(),
     style: GoogleFonts.montserrat(
       fontSize: textSize,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w700,
       color: textColor,
     ),
   );

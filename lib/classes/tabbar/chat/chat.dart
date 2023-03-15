@@ -16,6 +16,7 @@ class _TabbarChatScreenState extends State<TabbarChatScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: true,
           flexibleSpace: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: const [
@@ -35,7 +36,10 @@ class _TabbarChatScreenState extends State<TabbarChatScreen> {
         body: const TabBarView(
           children: [
             //
-            PublicChatRoomScreen(),
+            PublicChatRoomScreen(
+              strSenderName: '',
+              strSenderChatId: '',
+            ),
             // CHAT LIST
             AllChatsListScreen(),
           ],
