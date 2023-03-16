@@ -117,13 +117,32 @@ class _PublicChatRoomChatsState extends State<PublicChatRoomChats> {
         //
         Align(
           alignment: Alignment.bottomLeft,
-          child: textWithSemiBoldStyle(
-            //
-            getSnapshotData[index]['sender_name'].toString(),
-            //
-            14.0,
-            Colors.black,
-            // 'right',
+          child: Row(
+            children: [
+              textWithSemiBoldStyle(
+                //
+                getSnapshotData[index]['sender_name'].toString(),
+                //
+                16.0,
+                Colors.black,
+                // 'right',
+              ),
+              //
+              (getSnapshotData[index]['sender_firebase_id'].toString() ==
+                      FirebaseAuth.instance.currentUser!.uid)
+                  ? const SizedBox()
+                  : IconButton(
+                      onPressed: () {
+                        if (kDebugMode) {
+                          print('=====> CHAT WITH OTHERS CLICK <=====');
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.chat,
+                        color: Colors.purple,
+                      ),
+                    ),
+            ],
           ),
         ),
         //
@@ -151,11 +170,13 @@ class _PublicChatRoomChatsState extends State<PublicChatRoomChats> {
               color: Colors.grey.shade200,
             ),
             padding: const EdgeInsets.all(16),
-            child: Text(
+            child: textWithRegularStyle(
               //
               getSnapshotData[index]['message'].toString(),
               //
-              style: const TextStyle(fontSize: 15),
+              16.0,
+              Colors.black,
+              'left',
             ),
           ),
         ),
@@ -164,7 +185,9 @@ class _PublicChatRoomChatsState extends State<PublicChatRoomChats> {
           alignment: Alignment.bottomLeft,
           child: textWithRegularStyle(
             //
-            getSnapshotData[index]['time_stamp'].toString(),
+            funcConvertTimeStampToDateAndTime(
+              getSnapshotData[index]['time_stamp'],
+            ),
             //
             12.0,
             Colors.black,
@@ -176,52 +199,55 @@ class _PublicChatRoomChatsState extends State<PublicChatRoomChats> {
     );
   }
 
-  Column senderUI(getSnapshot, int index) {
-    return Column(
-      children: [
-        Align(
-          alignment: Alignment.bottomRight,
-          child: Container(
-            margin: const EdgeInsets.only(
-              left: 40,
-            ),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(
-                  16,
-                ),
-                bottomLeft: Radius.circular(
-                  16,
-                ),
-                topRight: Radius.circular(
-                  16,
-                ),
-              ),
-              color: Colors.blue[200],
-            ),
-            padding: const EdgeInsets.all(
-              16,
-            ),
-            child: const Text(
-              'r',
-              style: TextStyle(
-                fontSize: 15,
-              ),
-            ),
-          ),
-        ),
-        //
-        Align(
-          alignment: Alignment.bottomRight,
-          child: textWithRegularStyle(
-            getSnapshot[index]['time_stamp'].toString(),
-            12.0,
-            Colors.black,
-            'right',
-          ),
-        ),
-        //
-      ],
-    );
-  }
+  // Column senderUI(getSnapshot, int index) {
+  //   return Column(
+  //     children: [
+  //       Align(
+  //         alignment: Alignment.bottomRight,
+  //         child: Container(
+  //           margin: const EdgeInsets.only(
+  //             left: 40,
+  //           ),
+  //           decoration: BoxDecoration(
+  //             borderRadius: const BorderRadius.only(
+  //               topLeft: Radius.circular(
+  //                 16,
+  //               ),
+  //               bottomLeft: Radius.circular(
+  //                 16,
+  //               ),
+  //               topRight: Radius.circular(
+  //                 16,
+  //               ),
+  //             ),
+  //             color: Colors.blue[200],
+  //           ),
+  //           padding: const EdgeInsets.all(
+  //             16,
+  //           ),
+  //           child: const Text(
+  //             'r',
+  //             style: TextStyle(
+  //               fontSize: 15,
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //       //
+  //       Align(
+  //         alignment: Alignment.bottomRight,
+  //         child: textWithRegularStyle(
+  //           // getSnapshot[index]['time_stamp'].toString(),
+  //           funcConvertTimeStampToDateAndTime(
+  //             getSnapshot[index]['time_stamp'],
+  //           ),
+  //           12.0,
+  //           Colors.black,
+  //           'right',
+  //         ),
+  //       ),
+  //       //
+  //     ],
+  //   );
+  // }
 }
